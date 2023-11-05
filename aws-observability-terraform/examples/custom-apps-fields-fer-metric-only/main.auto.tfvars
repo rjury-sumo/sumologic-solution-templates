@@ -6,10 +6,10 @@ sumologic_environment       = "au"      # Please replace <YOUR SUMO DEPLOYMENT> 
 # sumologic_access_id         = ""
 # sumologic_access_key        = ""
 
-sumologic_organization_id   = ""      # Please replace <YOUR SUMO ORG ID> (including brackets) with your Sumo Logic Organization ID.
+sumologic_organization_id   = "00000000005756A4"      # Please replace <YOUR SUMO ORG ID> (including brackets) with your Sumo Logic Organization ID.
 
 # this is required only in source modules
 aws_account_alias           = "zz-app-ignoreme"      # Please replace <YOUR AWS ACCOUNT ALIAS> with an AWS account alias for identification in Sumo Logic Explorer View, metrics and logs.
 
 # Example: https://api.sumologic.com/api/ Please update with your sumologic api endpoint. Refer, https://help.sumologic.com/APIs/General-API-Information/Sumo-Logic-Endpoints-and-Firewall-Security
-sumo_api_endpoint           = "https://api.au.sumologic.com"        #"<YOUR SUMOLOGIC API ENDPOINT>"
+sumo_api_endpoint           = "https://api.au.sumologic.com/api/"        #"<YOUR SUMOLOGIC API ENDPOINT>"
