@@ -84,9 +84,35 @@ curl -s -H 'Content-Type: application/json' --user "$SUMO_ACCESS_ID:$SUMO_ACCESS
 curl -s -H 'Content-Type: application/json' --user "$SUMO_ACCESS_ID:$SUMO_ACCESS_KEY" -X DELETE https://api.au.sumologic.com/api/v1/entities/hierarchies/0000000000000458
 ```
 
-If you get an error that an incomplete heirarchy gets created each time and then it exits with an error for already use curl to get the id of the AWS Observabity heirarchy existing and import it:
+If you get an error that an incomplete heirarchy gets created, sometimes (maybe a provider bug??) an incomplete heirarchy is created that then causes an error.
 ```
-terraform import module.sumo-module.sumologic_hierarchy.awso_hierarchy 0000000000001353
+{
+      "name": "AWS Observability",
+      "level": {
+        "entityType": "account",
+        "nextLevelsWithConditions": [],
+        "nextLevel": {
+          "entityType": "region",
+          "nextLevelsWithConditions": [],
+          "nextLevel": {
+            "entityType": "namespace",
+            "nextLevelsWithConditions": [],
+            "nextLevel": {
+              "entityType": "entity",
+              "nextLevelsWithConditions": [],
+              "nextLevel": null
+            }
+          }
+        }
+      },
+      "filter": null,
+      "id": "0000000000001354"
+    }
+```
+
+Use curl as above to get id then import it:
+```
+terraform import module.sumo-module.sumologic_hierarchy.awso_hierarchy 0000000000001354
 ```
 
 skip to step 6
