@@ -21,6 +21,7 @@ You may want to maintain multiple tf deployment pipelines for aws obserability s
 - master account (apps / sources): This is setup first to create one time apps + source for first account/region
 - other account/region: sources only
 
+
 ## What's in the apps module
 These things are in the app module and only need to exist ONCE for all AWSO deployments:
 - create heiriarchy api call
@@ -33,6 +34,13 @@ These things are in the app module and only need to exist ONCE for all AWSO depl
 - demo aws monitors folder and alerts for each service (imported but disable by default)
 - custom notifications settings group for above if configured (none by default)
 
+### Customized FERS
+FERs in this project in field.tf are also customized in scope section.
+The reason for this to:
+- demonstrate how tweak FER scope if necessary in a rule
+- support centralized cloudtrail collection by scoping to ```_sourcecategory=*cloudtrail* ``` instead of ```account=* region=*```. Account field does not exist in cloudtrails where a customer already has existing collection and is using workaround here: https://help.sumologic.com/docs/observability/aws/other-configurations-tools/integrate-control-tower-accounts/#step-3-create-field-extraction-rule. In such a config the user could include this extra central FER for cloudtrails in as an additional FER in this project if necessary. (see "DEMONSTRATION CENTRAL FER FOR EXISTING SINGLE BUCKET CLOUDTRAILS" in field.tf)
+
+
 ## What issues will happen if you include apps in more than one tf project?
 Creating or pre-existence of some items cause issues if you include in multiple tf projects.
 - herirarchy should only exist once, but overwriting this is probably fine
@@ -43,8 +51,6 @@ Creating or pre-existence of some items cause issues if you include in multiple 
 - cannot import same monitor folder 2x in same location.
 
 ## Deployment
-
-
 - do step 1 from https://help.sumologic.com/docs/observability/aws/deploy-use-aws-observability/deploy-with-terraform/#step-1-set-up-the-terraform-environment
 - read step 2. review and edit ./main.auto.tfvars and set deployment/env region correctly
 1.1 presumably you have your own repo if you got this far!
@@ -115,12 +121,9 @@ Use curl as above to get id then import it:
 terraform import module.sumo-module.sumologic_hierarchy.awso_hierarchy 0000000000001354
 ```
 
-skip to step 6
+skip to step 6 (may need to backtrack to import for fields or heirarchy above to get one clean deploy)
 ```
 terraform validate
 terraform plan
 terraform apply
 ```
-- 
-
-

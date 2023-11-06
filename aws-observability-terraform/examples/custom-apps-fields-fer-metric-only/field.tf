@@ -129,7 +129,7 @@ resource "sumologic_field" "queuename" {
 resource "sumologic_field_extraction_rule" "AwsObservabilityAlbAccessLogsFER" {
       depends_on = [time_sleep.wait_for_10_seconds]
       name = "AwsObservabilityAlbAccessLogsFER"
-      scope = "account=* region=* (http or https or h2 or grpcs or ws or wss)"
+      scope = "_sourcecategory=*alb* (http or https or h2 or grpcs or ws or wss)"
       parse_expression = <<EOT
               | parse "* * * * * * * * * * * * \"*\" \"*\" * * * \"*\"" as Type, DateTime, loadbalancer, Client, Target, RequestProcessingTime, TargetProcessingTime, ResponseProcessingTime, ElbStatusCode, TargetStatusCode, ReceivedBytes, SentBytes, Request, UserAgent, SslCipher, SslProtocol, TargetGroupArn, TraceId
               | where Type in ("http", "https", "h2", "grpcs", "ws", "wss")
@@ -144,7 +144,7 @@ resource "sumologic_field_extraction_rule" "AwsObservabilityAlbAccessLogsFER" {
 resource "sumologic_field_extraction_rule" "AwsObservabilityApiGatewayCloudTrailLogsFER" {
       depends_on = [time_sleep.wait_for_10_seconds]
       name = "AwsObservabilityApiGatewayCloudTrailLogsFER"
-      scope = "account=* eventname eventsource \"apigateway.amazonaws.com\""
+      scope = "_sourcecategory=*cloudtrail* eventname eventsource \"apigateway.amazonaws.com\""
       parse_expression = <<EOT
               | json "eventSource", "awsRegion", "responseElements", "recipientAccountId" as eventSource, region, responseElements, accountid nodrop
               | where eventSource = "apigateway.amazonaws.com"
@@ -160,7 +160,7 @@ resource "sumologic_field_extraction_rule" "AwsObservabilityApiGatewayCloudTrail
 resource "sumologic_field_extraction_rule" "AwsObservabilityDynamoDBCloudTrailLogsFER" {
       depends_on = [time_sleep.wait_for_10_seconds]
       name = "AwsObservabilityDynamoDBCloudTrailLogsFER"
-      scope = "account=* eventname eventsource \"dynamodb.amazonaws.com\""
+      scope = "_sourcecategory=*cloudtrail* eventname eventsource \"dynamodb.amazonaws.com\""
       parse_expression = <<EOT
               | json "eventSource", "awsRegion", "requestParameters.tableName", "recipientAccountId" as eventSource, region, tablename, accountid nodrop
               | where eventSource = "dynamodb.amazonaws.com"
@@ -175,7 +175,7 @@ resource "sumologic_field_extraction_rule" "AwsObservabilityDynamoDBCloudTrailLo
 resource "sumologic_field_extraction_rule" "AwsObservabilityEC2CloudTrailLogsFER" {
       depends_on = [time_sleep.wait_for_10_seconds]
       name = "AwsObservabilityEC2CloudTrailLogsFER"
-      scope = "account=* eventname eventsource \"ec2.amazonaws.com\""
+      scope = "_sourcecategory=*cloudtrail* eventname eventsource \"ec2.amazonaws.com\""
       parse_expression = <<EOT
               | json "eventSource", "awsRegion", "requestParameters", "responseElements", "recipientAccountId" as eventSource, region, requestParameters, responseElements, accountid nodrop
               | where eventSource = "ec2.amazonaws.com"
@@ -200,7 +200,7 @@ resource "sumologic_field_extraction_rule" "AwsObservabilityEC2CloudTrailLogsFER
 resource "sumologic_field_extraction_rule" "AwsObservabilityECSCloudTrailLogsFER" {
       depends_on = [time_sleep.wait_for_10_seconds]
       name = "AwsObservabilityECSCloudTrailLogsFER"
-      scope = "account=* eventname eventsource \"ecs.amazonaws.com\""
+      scope = "_sourcecategory=*cloudtrail* eventname eventsource \"ecs.amazonaws.com\""
       parse_expression = <<EOT
               | json "eventSource", "awsRegion", "requestParameters", "recipientAccountId" as eventSource, region, requestParameters, accountid nodrop
               | json field=requestParameters "cluster" as clustername nodrop
@@ -216,7 +216,7 @@ resource "sumologic_field_extraction_rule" "AwsObservabilityECSCloudTrailLogsFER
 resource "sumologic_field_extraction_rule" "AwsObservabilityElastiCacheCloudTrailLogsFER" {
       depends_on = [time_sleep.wait_for_10_seconds]
       name = "AwsObservabilityElastiCacheCloudTrailLogsFER"
-      scope = "account=* eventname eventsource \"elasticache.amazonaws.com\""
+      scope = "_sourcecategory=*cloudtrail* eventname eventsource \"elasticache.amazonaws.com\""
       parse_expression = <<EOT
               | json "eventSource", "awsRegion", "requestParameters.cacheClusterId", "responseElements.cacheClusterId", "recipientAccountId" as eventSource, region, req_cacheClusterId, res_cacheClusterId, accountid nodrop
               | where eventSource = "elasticache.amazonaws.com"
@@ -232,7 +232,7 @@ resource "sumologic_field_extraction_rule" "AwsObservabilityElastiCacheCloudTrai
 resource "sumologic_field_extraction_rule" "AwsObservabilityElbAccessLogsFER" {
       depends_on = [time_sleep.wait_for_10_seconds]
       name = "AwsObservabilityElbAccessLogsFER"
-      scope = "account=* region=*"
+      scope = "_sourcecategory=*elb*"
       parse_expression = <<EOT
         | parse "* * * * * * * * * * * \"*\" \"*\" * *" as datetime, loadbalancername, client, backend, request_processing_time, backend_processing_time, response_processing_time, elb_status_code, backend_status_code, received_bytes, sent_bytes, request, user_agent, ssl_cipher, ssl_protocol
         | parse regex field=datetime "(?<datetimevalue>\d{0,4}-\d{0,2}-\d{0,2}T\d{0,2}:\d{0,2}:\d{0,2}\.\d+Z)" 
@@ -247,7 +247,7 @@ resource "sumologic_field_extraction_rule" "AwsObservabilityElbAccessLogsFER" {
 resource "sumologic_field_extraction_rule" "AwsObservabilityFieldExtractionRule" {
       depends_on = [time_sleep.wait_for_10_seconds]
       name = "AwsObservabilityFieldExtractionRule"
-      scope = "account=* eventname eventsource \"lambda.amazonaws.com\""
+      scope = "_sourcecategory=*cloudtrail* eventname eventsource \"lambda.amazonaws.com\""
       parse_expression = <<EOT
               | json "eventSource", "awsRegion", "requestParameters", "recipientAccountId" as eventSource, region, requestParameters, accountid nodrop
               | where eventSource = "lambda.amazonaws.com"
@@ -266,7 +266,7 @@ resource "sumologic_field_extraction_rule" "AwsObservabilityFieldExtractionRule"
 resource "sumologic_field_extraction_rule" "AwsObservabilityLambdaCloudWatchLogsFER" {
       depends_on = [time_sleep.wait_for_10_seconds]
       name = "AwsObservabilityLambdaCloudWatchLogsFER"
-      scope = "account=* region=* _sourceHost=/aws/lambda/*"
+      scope = "_sourcecategory=*cloudwatch* _sourceHost=/aws/lambda/*"
       parse_expression = <<EOT
               | parse field=_sourceHost "/aws/lambda/*" as functionname
               | tolowercase(functionname) as functionname
@@ -280,7 +280,7 @@ resource "sumologic_field_extraction_rule" "AwsObservabilityLambdaCloudWatchLogs
 resource "sumologic_field_extraction_rule" "AwsObservabilityGenericCloudWatchLogsFER" {
       depends_on = [time_sleep.wait_for_10_seconds]
       name = "AwsObservabilityGenericCloudWatchLogsFER"
-      scope = "account=* region=* _sourceHost=/aws/*"
+      scope = "_sourcecategory=*cloudwatch* _sourceHost=/aws/*"
       parse_expression = <<EOT
                 | "unknown" as namespace
                 | if (_sourceHost matches "/aws/lambda/*", "aws/lambda", namespace) as namespace
@@ -300,7 +300,7 @@ resource "sumologic_field_extraction_rule" "AwsObservabilityGenericCloudWatchLog
 resource "sumologic_field_extraction_rule" "AwsObservabilityRdsCloudTrailLogsFER" {
       depends_on = [time_sleep.wait_for_10_seconds]
       name = "AwsObservabilityRdsCloudTrailLogsFER"
-      scope = "account=* eventname eventsource \"rds.amazonaws.com\""
+      scope = "_sourcecategory=*cloudtrail* eventname eventsource \"rds.amazonaws.com\""
       parse_expression = <<EOT
               | json "eventSource", "awsRegion", "requestParameters", "responseElements", "recipientAccountId" as eventSource, region, requestParameters, responseElements, accountid nodrop
               | where eventSource = "rds.amazonaws.com"
@@ -321,7 +321,7 @@ resource "sumologic_field_extraction_rule" "AwsObservabilityRdsCloudTrailLogsFER
 resource "sumologic_field_extraction_rule" "AwsObservabilitySNSCloudTrailLogsFER" {
       depends_on = [time_sleep.wait_for_10_seconds]
       name = "AwsObservabilitySNSCloudTrailLogsFER"
-      scope = "account=* eventname eventsource \"sns.amazonaws.com\""
+      scope = "_sourcecategory=*cloudtrail*  eventname eventsource \"sns.amazonaws.com\""
       parse_expression = <<EOT
               | json "userIdentity", "eventSource", "eventName", "awsRegion", "recipientAccountId", "requestParameters", "responseElements" as userIdentity, event_source, event_name, region, recipient_account_id, requestParameters, responseElements nodrop
               | where event_source = "sns.amazonaws.com"
@@ -347,7 +347,7 @@ resource "sumologic_field_extraction_rule" "AwsObservabilitySNSCloudTrailLogsFER
 resource "sumologic_field_extraction_rule" "AwsObservabilitySQSCloudTrailLogsFER" {
       depends_on = [time_sleep.wait_for_10_seconds]
       name = "AwsObservabilitySQSCloudTrailLogsFER"
-      scope = "account=* eventsource \"sqs.amazonaws.com\""
+      scope = "_sourcecategory=*cloudtrail* eventsource \"sqs.amazonaws.com\""
       parse_expression = <<EOT
               | json "userIdentity", "eventSource", "eventName", "awsRegion", "recipientAccountId", "requestParameters", "responseElements", "sourceIPAddress" as userIdentity, event_source, event_name, region, recipient_account_id, requestParameters, responseElements, src_ip  nodrop
               | json field=userIdentity "accountId", "type", "arn", "userName" as accountid, type, arn, username nodrop
@@ -363,3 +363,29 @@ resource "sumologic_field_extraction_rule" "AwsObservabilitySQSCloudTrailLogsFER
       EOT
       enabled = true
 }
+
+# DEMONSTRATION CENTRAL FER FOR EXISTING SINGLE BUCKET CLOUDTRAILS
+# resource "sumologic_field_extraction_rule" "CustomCloudtrailFER" {
+#       depends_on = [time_sleep.wait_for_10_seconds]
+#       name = "CustomCloudtrailFER"
+#       scope = "_sourcecategory=*cloudtrail* eventsource "
+#       parse_expression = <<EOT
+#               | json field=_raw "eventName" as eventName
+#               | json field=_raw "eventType" as eventType
+#               | json field=_raw "eventSource" as eventSource
+#               | parse field=eventSource "*.amazonaws.com" as eventService
+#               | concat("aws/",tolowercase(eventservice)) as namespace
+#               | json field=_raw "recipientAccountId"
+
+#               // very useful to track errors
+#               | Json "errorCode" nodrop
+
+#               // trick AWSO as if we collected these via AWSO collection
+#               | recipientAccountId as account
+
+#               | if (recipientAccountId = "528560886094", "dev", account) as account
+#               | if (recipientAccountId = "567680881046", "prod", account) as account
+
+#       EOT
+#       enabled = true
+# }
