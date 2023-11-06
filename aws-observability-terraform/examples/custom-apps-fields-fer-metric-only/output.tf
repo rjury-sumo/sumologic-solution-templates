@@ -78,10 +78,10 @@ output "monitors_folder_id" {
   description = "This output contains sumologic monitors folder."
 }
 
-output "hierarchy_id" {
-  value       = module.sumo-module.sumologic_hierarchy.id
-  description = "This output contains sumologic hierarchy id."
-}
+# output "hierarchy_id" {
+#   value       = module.sumo-module.sumologic_hierarchy.id
+#   description = "This output contains sumologic hierarchy id."
+# }
 
 # API gateway FER id
 output "sumologic_field_extraction_rule_apigateway" {
