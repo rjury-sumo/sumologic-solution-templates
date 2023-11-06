@@ -24,7 +24,7 @@ You may want to maintain multiple tf deployment pipelines for aws obserability s
 
 ## What's in the apps module
 These things are in the app module and only need to exist ONCE for all AWSO deployments:
-- create heiriarchy api call
+- create heirarchy api call
 - fields
 - custom FERs: to relabel certain AWS logs
 - metrics rules: alias certain key metric tags to new tag name
@@ -38,12 +38,12 @@ These things are in the app module and only need to exist ONCE for all AWSO depl
 FERs in this project in field.tf are also customized in scope section.
 The reason for this to:
 - demonstrate how tweak FER scope if necessary in a rule
-- support centralized cloudtrail collection by scoping to ```_sourcecategory=*cloudtrail* ``` instead of ```account=* region=*```. Account field does not exist in cloudtrails where a customer already has existing collection and is using workaround here: https://help.sumologic.com/docs/observability/aws/other-configurations-tools/integrate-control-tower-accounts/#step-3-create-field-extraction-rule. In such a config the user could include this extra central FER for cloudtrails in as an additional FER in this project if necessary. (see "DEMONSTRATION CENTRAL FER FOR EXISTING SINGLE BUCKET CLOUDTRAILS" in field.tf)
+- support centralized cloudtrail collection (see topic below)
 
 
 ## What issues will happen if you include apps in more than one tf project?
 Creating or pre-existence of some items cause issues if you include in multiple tf projects.
-- herirarchy should only exist once, but overwriting this is probably fine
+- heirarchy should only exist once or tf will error
 - tf provider does not have a datasource for fields - they are created again each time. so if a field exists tf will get error for pre-existing. Hence the workaround in deployment guide to import any existin fields/fers wiht fields.sh
 - same is true for fers (in fields.sh)
 - same is true for metric rules - this is not in the fields.sh for some reason??
@@ -53,10 +53,13 @@ Creating or pre-existence of some items cause issues if you include in multiple 
 ## Deployment
 - do step 1 from https://help.sumologic.com/docs/observability/aws/deploy-use-aws-observability/deploy-with-terraform/#step-1-set-up-the-terraform-environment
 - read step 2. review and edit ./main.auto.tfvars and set deployment/env region correctly
-1.1 presumably you have your own repo if you got this far!
-1.2 terraform init
-1.3 in this example config is a mix of secrets  defined via TF_VAR_ in shell script (Review if this is appropriate for your env.) and the main.auto.tfvars file.
-1.4 It's highly likely some of the fields already exist in your org and then this will happen (because fields try to create and cannot handle already existing resource with same name)
+- 1.1 presumably you have your own repo if you got this far!
+- 1.2 terraform init
+- 1.3 in this example config is a mix of secrets  defined via TF_VAR_ in shell script (Review if this is appropriate for your env.) and the main.auto.tfvars file.
+
+### step 1.4 fields import
+Re 1.4 it's **highly likely some of the fields already exist** in your org and this will cause errors with deployment, as the field already exists. You will get error below for each field already existing (or FER)
+- 
 ```
 ╷
 │ Error: {"id":"7GCYS-LGM9Z-8OGMO","errors":[{"code":"field:already_exists","message":"Field with the given name already exists"}]}
@@ -66,9 +69,10 @@ Creating or pre-existence of some items cause issues if you include in multiple 
 │    7: resource "sumologic_field" "account" {
 │
 ```
-to resolve this import the fields into your state file with fields.sh as per 1.4
 
-If you already tried the terrafrom apply and it failed at this point,  don't worry you can run fields.sh and you will get a buch of errors like this below. But it doesn't crash the import script so it will still import the missing ones, it just looks messy in ui.
+To resolve this import the fields into your state file with fields.sh as per 1.4
+
+Don't worry you can run fields.sh and you will get a bunch of errors like this below. It doesn't crash the import script so it will still import the missing ones, it just looks messy in ui. End result is your state will be a nice merge of both.
 ```
 module.sumo-module.data.sumologic_admin_recommended_folder.adminRecoFolder: Read complete after 2s [id=00000000005EB9EE]
 ╷
@@ -77,20 +81,18 @@ module.sumo-module.data.sumologic_admin_recommended_folder.adminRecoFolder: Read
 │ Terraform is already managing a remote object for sumologic_field.apiname. To import to this address you must first remove the existing object from the state.
 ```
 
-Or you can create a version of fields.sh just for the overlap delta. ( there are two lists defined as variables)
+### Heiriarchy collision
+The Heirarchy api is a hidden back end component that creates explore. It can only exist ONCE.
 
-
-### Heriarchy collision
-You may have this issue if you ever setup AWSO before in your org, or sometimes it happens first time running the project. (not sure why!)
+You may have this issue if you ever setup AWSO before in your org, or sometimes it happens first time running the project via terraform (not sure why!)
 https://help.sumologic.com/docs/observability/aws/deploy-use-aws-observability/deploy-with-terraform/#hierarchy-named-aws-observability-already-exist
 
-easy fix as per above. You could import it but there have been changes in the heirarchy between awso versions in past to removal is probably best option as per docs.
+You can try the delete suggested by docs.
 ```
 curl -s -H 'Content-Type: application/json' --user "$SUMO_ACCESS_ID:$SUMO_ACCESS_KEY" -X GET https://api.au.sumologic.com/api/v1/entities/hierarchies | jq
 curl -s -H 'Content-Type: application/json' --user "$SUMO_ACCESS_ID:$SUMO_ACCESS_KEY" -X DELETE https://api.au.sumologic.com/api/v1/entities/hierarchies/0000000000000458
 ```
-
-If you get an error that an incomplete heirarchy gets created, sometimes (maybe a provider bug??) an incomplete heirarchy is created that then causes an error.
+If this still doesn't work (it gets recreated then errors) you can import it. (maybe a provider bug?? - an incomplete heirarchy is created that then causes an error.)
 ```
 {
       "name": "AWS Observability",
@@ -121,9 +123,19 @@ Use curl as above to get id then import it:
 terraform import module.sumo-module.sumologic_hierarchy.awso_hierarchy 0000000000001354
 ```
 
-skip to step 6 (may need to backtrack to import for fields or heirarchy above to get one clean deploy)
+## Final Deployment
+skip to step 6 in origional docs and deploy. You may need to backtrack to import for fields or heirarchy above to get one clean deploy.
 ```
 terraform validate
 terraform plan
 terraform apply
 ```
+
+## Custom Cloudtrail / Watch /ALB FERs
+This project includes custom FERs in field.tf that are compatible with both AWSO created or existing cloudtrail sources (provided ```_sourcecategory=*cloudtrail*```). You can see the modified FERs in field.tf and further edit if necessary.
+
+For a customer with existing centralized cloudtrail collection it's better to scope to ```_sourcecategory=*cloudtrail* ``` instead of ```account=* region=*```.
+
+This is because the account field does not exist in cloudtrails where a customer already has existing collection. Using this workaround will create a FER contention (because they run in random order): https://help.sumologic.com/docs/observability/aws/other-configurations-tools/integrate-control-tower-accounts/#step-3-create-field-extraction-rule. 
+
+In such a config the user could include this extra central FER for cloudtrails in as an additional FER in this project if necessary. (see "DEMONSTRATION CENTRAL FER FOR EXISTING SINGLE BUCKET CLOUDTRAILS" in field.tf)
