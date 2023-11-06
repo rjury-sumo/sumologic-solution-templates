@@ -13,3 +13,8 @@ aws_account_alias           = "zz-app-ignoreme"      # Please replace <YOUR AWS 
 
 # Example: https://api.sumologic.com/api/ Please update with your sumologic api endpoint. Refer, https://help.sumologic.com/APIs/General-API-Information/Sumo-Logic-Endpoints-and-Firewall-Security
 sumo_api_endpoint           = "https://api.au.sumologic.com/api/"        #"<YOUR SUMOLOGIC API ENDPOINT>"
+
+
+# app install location. Admin recommended is best practice for org wide sumo curated content.
+sumologic_folder_installation_location = "Admin Recommended Folder"
+sumologic_folder_share_with_org = true
