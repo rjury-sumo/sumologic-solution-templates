@@ -1,216 +1,141 @@
-output "collection_folder_id" {
-  value       = module.collection-module
-  description = "This output contains sumologic Collections output."
-  sensitive = true
-}
-
 output "sumologic_collector" {
-  value       = "${(var.executeTest1 || var.executeTest3) ? module.collection-module.sumologic_collector.collector.id : ""}"
-  description = "This output contains sumologic collector id."
-}
-
-output "aws_s3" {
-  value       = "${var.executeTest1 ? module.collection-module.aws_s3_bucket.s3_bucket.id:""}"
-  description = "This output contains AWS S3 bucket name."
-}
-
-output "aws_sns_topic" {
-  value       = "${var.executeTest1 ? module.collection-module.aws_sns_topic.sns_topic.arn:""}"
-  description = "This output contains AWS SNS topic arn."
+  value       = local.create_collector ? sumologic_collector.collector : {}
+  description = "Sumo Logic collector details."
 }
 
 output "aws_iam_role" {
-  value       = "${var.executeTest2 == false ? module.collection-module.aws_iam_role.sumologic_iam_role.name:""}"
-  description = "This output contains IAM role arn."
+  value       = local.create_iam_role ? aws_iam_role.sumologic_iam_role : {}
+  description = "Sumo Logic AWS IAM Role for trust relationship."
 }
 
-output "sumologic_cloudtrail_source" {
-  value       = "${var.collect_cloudtrail == true ? module.collection-module.cloudtrail_source.id : ""}"
-  description = "This output contains sumologic CloudTrail source id."
+output "aws_s3_bucket" {
+  value       = local.create_common_bucket ? aws_s3_bucket.s3_bucket : {}
+  description = "Common S3 Bucket to store CloudTrail, ELB and Failed Kinesis data."
 }
 
-# Comment in case of test 4
-# output "aws_cloudtrail_name" {
-#   value       = "${var.collect_cloudtrail == true ? module.collection-module.aws_cloudtrail.cloudtrail.name : ""}"
-#   description = "This output contains CloudTrail Name."
-# }
+output "aws_sns_topic" {
+  value       = local.create_common_sns_topic ? aws_sns_topic.sns_topic : {}
+  description = "Common SNS topic attached to the S3 bucket."
+}
+
+output "aws_cloudtrail" {
+  value       = local.create_cloudtrail_source && var.cloudtrail_source_details.bucket_details.create_bucket ? module.cloudtrail_module["cloudtrail_module"].aws_cloudtrail : {}
+  description = "AWS Trail created to send CloudTrail logs to AWS S3 bucket."
+}
 
 output "cloudtrail_sns_topic" {
-  value       = "${var.executeTest4 ? module.collection-module.cloudtrail_sns_topic.sns_topic.arn:""}"
-  description = "This output contains AWS SNS topic arn."
+  value       = local.create_cloudtrail_source && !var.cloudtrail_source_details.bucket_details.create_bucket ? module.cloudtrail_module["cloudtrail_module"].aws_sns_topic : {}
+  description = "SNS topic created to be attached to an existing cloudtrail bucket."
 }
 
-output "cloudtrail_sns_sub" {
-  value       = "${var.collect_cloudtrail == true ? module.collection-module.cloudtrail_sns_subscription.arn : ""}"
-  description = "This output contains Cloudtrail AWS SNS subscription arn."
+output "cloudtrail_source" {
+  value       = local.create_cloudtrail_source ? module.cloudtrail_module["cloudtrail_module"].sumologic_source : null
+  description = "Sumo Logic AWS CloudTrail source."
 }
 
-output "sumologic_kinesis_firehose_for_metrics_source" {
-  value       = "${var.collect_metric_cloudwatch == "Kinesis Firehose Metrics Source" ? module.collection-module.kinesis_firehose_for_metrics_source.id : ""}"
-  description = "This output contains sumologic kinesis firehose for metrics source id."
+output "cloudtrail_sns_subscription" {
+  value       = local.create_cloudtrail_source ? module.cloudtrail_module["cloudtrail_module"].aws_sns_subscription : {}
+  description = "AWS SNS subscription to Sumo Logic AWS CloudTrail source."
 }
 
-output "kf_metrics_stream" {
-  value       = "${var.collect_metric_cloudwatch == "Kinesis Firehose Metrics Source" ? module.collection-module.aws_kinesis_firehose_metrics_delivery_stream.name : ""}"
-  description = "This output contains Kinesis Firehose for metrics stream Name."
+output "elb_sns_topic" {
+  value       = local.create_elb_source && !var.elb_source_details.bucket_details.create_bucket ? module.elb_module["elb_module"].aws_sns_topic : {}
+  description = "SNS topic created to be attached to an existing elb logs bucket."
 }
 
-output "cw_metrics_stream" {
-  value       = "${var.collect_metric_cloudwatch == "Kinesis Firehose Metrics Source" ? module.collection-module.aws_cloudwatch_metric_stream.name : ""}"
-  description = "This output contains CloudWatch metrics stream Name."
+output "elb_source" {
+  value       = local.create_elb_source ? module.elb_module["elb_module"].sumologic_source : null
+  description = "Sumo Logic AWS ELB source."
 }
 
-# output "sumologic_cloudwatch_metrics_source" {
-#   value       = "${var.collect_metric_cloudwatch == "CloudWatch Metrics Source" ? module.collection-module.cloudwatch_metrics_source.id : ""}"
-#   description = "This output contains sumologic CloudWatch metrics source id."
-# }
-
-output "sumologic_kinesis_firehose_for_logs_source" {
-  value       = "${var.collect_logs_cloudwatch == "Kinesis Firehose Log Source" ? module.collection-module.kinesis_firehose_for_logs_source.id : ""}"
-  description = "This output contains sumologic kinesis firehose for logs source id."
+output "elb_sns_subscription" {
+  value       = local.create_elb_source ? module.elb_module["elb_module"].aws_sns_subscription : {}
+  description = "AWS SNS subscription to Sumo Logic AWS ELB source."
 }
 
-output "kf_logs_auto_enable_stack" {
-  value       = "${var.collect_logs_cloudwatch == "Kinesis Firehose Log Source" ? module.collection-module.kinesis_firehose_for_logs_auto_subscribe_stack.auto_enable_logs_subscription.id : ""}"
-  description = "This output contains Kinesis Firehose for logs auto enable CloudFormation Name."
-}
-
-output "kf_logs_stream" {
-  value       = "${var.collect_logs_cloudwatch == "Kinesis Firehose Log Source" ? module.collection-module.aws_kinesis_firehose_logs_delivery_stream.name : ""}"
-  description = "This output contains Kinesis Firehose for logs stream Name."
-}
-
-output "sumologic_cloudwatch_logs_source" {
-  value       = "${var.collect_logs_cloudwatch == "Lambda Log Forwarder" ? module.collection-module.cloudwatch_logs_source.id : ""}"
-  description = "This output contains sumologic CloudWatch log source id."
-}
-
-output "cw_logs_auto_enable_stack" {
-  value       = "${var.collect_logs_cloudwatch == "Lambda Log Forwarder" ? module.collection-module.cloudwatch_logs_auto_subscribe_stack.auto_enable_logs_subscription.id : ""}"
-  description = "This output contains CloudWatch logs cloudFormation stack."
-}
-
-output "log_forwarder_lambda_name" {
-  value       = "${var.collect_logs_cloudwatch == "Lambda Log Forwarder" ? module.collection-module.cloudwatch_logs_lambda_function.id : ""}"
-  description = "This output contains Lambda logs forwarder Function Name."
-}
-
-output "sumologic_classic_lb_source" {
-  value       = "${var.collect_classic_lb == true ? module.collection-module.classic_lb_source.id : ""}"
-  description = "This output contains sumologic Classic ELB source id."
+output "elb_auto_enable_stack" {
+  value       = local.create_elb_source && var.auto_enable_access_logs != "None" ? module.elb_module["elb_module"].aws_serverlessapplicationrepository_cloudformation_stack : {}
+  description = "AWS CloudFormation stack for ALB Auto Enable access logs."
 }
 
 output "classic_lb_sns_topic" {
-  value       = "${var.executeTest4 ? module.collection-module.classic_lb_sns_topic.sns_topic.arn:""}"
-  description = "This output contains AWS SNS topic arn."
+  value       = local.create_classic_lb_source && !var.classic_lb_source_details.bucket_details.create_bucket ? module.classic_lb_module["classic_lb_module"].aws_sns_topic : {}
+  description = "SNS topic created to be attached to an existing classic lb logs bucket."
 }
 
-output "classic_lb_sns_sub" {
-  value       = "${var.collect_classic_lb == true ? module.collection-module.classic_lb_sns_subscription.arn : ""}"
-  description = "This output contains Classic ELB AWS SNS subscription arn."
+output "classic_lb_source" {
+  value       = local.create_classic_lb_source ? module.classic_lb_module["classic_lb_module"].sumologic_source : null
+  description = "Sumo Logic AWS Classic LB source."
 }
 
-output "clb_auto_enable_stack" {
-  value       = "${var.collect_classic_lb == true ? module.collection-module.classic_lb_auto_enable_stack.auto_enable_access_logs.id : ""}"
-  description = "This output contains CLB auto enable CloudFormation Name."
+output "classic_lb_sns_subscription" {
+  value       = local.create_classic_lb_source ? module.classic_lb_module["classic_lb_module"].aws_sns_subscription : {}
+  description = "AWS SNS subscription to Sumo Logic AWS Classic LB source."
 }
 
-output "sumologic_elb_source" {
-  value       = "${var.collect_elb == true ? module.collection-module.elb_source.id : ""}"
-  description = "This output contains sumologic ALB source id."
+output "classic_lb_auto_enable_stack" {
+  value       = local.create_classic_lb_source && var.auto_enable_access_logs != "None" ? module.classic_lb_module["classic_lb_module"].aws_serverlessapplicationrepository_cloudformation_stack : {}
+  description = "AWS CloudFormation stack for Classic LB Auto Enable access logs."
 }
 
-output "alb_sns_topic" {
-  value       = "${var.executeTest4 ? module.collection-module.elb_sns_topic.sns_topic.arn:""}"
-  description = "This output contains AWS SNS topic arn."
+output "cloudwatch_metrics_source" {
+  value = local.create_cw_metrics_source ? toset([
+    for namespace in var.cloudwatch_metrics_source_details.limit_to_namespaces : module.cloudwatch_metrics_source_module[namespace].sumologic_source
+  ]) : []
+  description = "Sumo Logic AWS CloudWatch Metrics source."
 }
 
-output "alb_sns_sub" {
-  value       = "${var.collect_elb == true ? module.collection-module.elb_sns_subscription.arn : ""}"
-  description = "This output contains ALB AWS SNS subscription arn."
+output "kinesis_firehose_for_metrics_source" {
+  value       = local.create_kf_metrics_source ? module.kinesis_firehose_for_metrics_source_module["kinesis_firehose_for_metrics_source_module"].sumologic_source : null
+  description = "Sumo Logic AWS Kinesis Firehose for Metrics source."
 }
 
-output "alb_auto_enable_stack" {
-  value       = "${var.collect_elb == true ? module.collection-module.elb_auto_enable_stack.auto_enable_access_logs.id : ""}"
-  description = "This output contains ALB auto enable CloudFormation Name."
+output "aws_kinesis_firehose_metrics_delivery_stream" {
+  value       = local.create_kf_metrics_source ? module.kinesis_firehose_for_metrics_source_module["kinesis_firehose_for_metrics_source_module"].aws_kinesis_firehose_delivery_stream : null
+  description = "AWS Kinesis firehose delivery stream to send metrics to Sumo Logic."
 }
 
-output "sumologic_inventory_source" {
-  value       = "${(var.collect_rce == "Both" || var.collect_rce == "Inventory Source") ? module.collection-module.inventory_source.aws_inventory_source.id : ""}"
-  description = "This output contains sumologic aws inventory source id."
+output "aws_cloudwatch_metric_stream" {
+  value       = local.create_kf_metrics_source ? module.kinesis_firehose_for_metrics_source_module["kinesis_firehose_for_metrics_source_module"].aws_cloudwatch_metric_stream : null
+  description = "CloudWatch metrics stream to send metrics."
 }
 
-output "sumologic_xray_source" {
-  value       = "${(var.collect_rce == "Both" || var.collect_rce == "Xray Source") ? module.collection-module.xray_source.aws_xray_source.id : ""}"
-  description = "This output contains sumologic aws xray source id."
+output "cloudwatch_logs_source" {
+  value       = local.create_llf_logs_source ? module.cloudwatch_logs_lambda_log_forwarder_module["cloudwatch_logs_lambda_log_forwarder_module"].sumologic_source : null
+  description = "Sumo Logic HTTP source."
 }
 
-output "sumologic_field_account" {
-  value       = sumologic_field.account.id
-  description = "This output contains sumologic Account field id."
+output "cloudwatch_logs_lambda_function" {
+  value       = local.create_llf_logs_source ? module.cloudwatch_logs_lambda_log_forwarder_module["cloudwatch_logs_lambda_log_forwarder_module"].aws_cw_lambda_function : null
+  description = "AWS Lambda function to send logs to Sumo Logic."
 }
 
-output "sumologic_field_region" {
-  value       = sumologic_field.region.id
-  description = "This output contains sumologic Region field id."
+output "cloudwatch_logs_auto_subscribe_stack" {
+  value       = local.create_llf_logs_source && var.auto_enable_logs_subscription != "None" ? module.cloudwatch_logs_lambda_log_forwarder_module["cloudwatch_logs_lambda_log_forwarder_module"].aws_serverlessapplicationrepository_cloudformation_stack : {}
+  description = "AWS CloudFormation stack for Auto Enable logs subscription."
 }
 
-output "sumologic_field_accountid" {
-  value       = sumologic_field.accountid.id
-  description = "This output contains sumologic accountid field id."
+output "kinesis_firehose_for_logs_source" {
+  value       = local.create_kf_logs_source ? module.kinesis_firehose_for_logs_module["kinesis_firehose_for_logs_module"].sumologic_source : null
+  description = "Sumo Logic Kinesis Firehose for Logs source."
 }
 
-output "sumologic_field_namespace" {
-  value       = sumologic_field.namespace.id
-  description = "This output contains sumologic namespace field id."
+output "aws_kinesis_firehose_logs_delivery_stream" {
+  value       = local.create_kf_logs_source ? module.kinesis_firehose_for_logs_module["kinesis_firehose_for_logs_module"].aws_kinesis_firehose_delivery_stream : null
+  description = "AWS Kinesis firehose delivery stream to send logs to Sumo Logic."
 }
 
-output "sumologic_field_loadbalancer" {
-  value       = sumologic_field.loadbalancer.id
-  description = "This output contains sumologic loadbalancer field id."
+output "kinesis_firehose_for_logs_auto_subscribe_stack" {
+  value       = local.create_kf_logs_source && var.auto_enable_logs_subscription != "None" ? module.kinesis_firehose_for_logs_module["kinesis_firehose_for_logs_module"].aws_serverlessapplicationrepository_cloudformation_stack : {}
+  description = "AWS CloudFormation stack for Auto Enable logs subscription."
 }
 
-output "sumologic_field_loadbalancername" {
-  value       = sumologic_field.loadbalancername.id
-  description = "This output contains sumologic loadbalancername field id."
+output "inventory_source" {
+  value       = local.create_inventory_source ? module.root_cause_sources_module["root_cause_sources_module"].inventory_sumologic_source : null
+  description = "Sumo Logic AWS Inventory source."
 }
 
-output "sumologic_field_apiname" {
-  value       = sumologic_field.apiname.id
-  description = "This output contains sumologic apiname field id."
-}
-
-output "sumologic_field_tablename" {
-  value       = sumologic_field.tablename.id
-  description = "This output contains sumologic tablename field id."
-}
-
-output "sumologic_field_instanceid" {
-  value       = sumologic_field.instanceid.id
-  description = "This output contains sumologic instanceid field id."
-}
-
-output "sumologic_field_clustername" {
-  value       = sumologic_field.clustername.id
-  description = "This output contains sumologic clustername field id."
-}
-
-output "sumologic_field_cacheclusterid" {
-  value       = sumologic_field.cacheclusterid.id
-  description = "This output contains sumologic cacheclusterid field id."
-}
-
-output "sumologic_field_functionname" {
-  value       = sumologic_field.functionname.id
-  description = "This output contains sumologic functionname field id."
-}
-
-output "sumologic_field_networkloadbalancer" {
-  value       = sumologic_field.networkloadbalancer.id
-  description = "This output contains sumologic networkloadbalancer field id."
-}
-
-output "sumologic_field_dbidentifier" {
-  value       = sumologic_field.dbidentifier.id
-  description = "This output contains sumologic dbidentifier field id."
+output "xray_source" {
+  value       = local.create_xray_source ? module.root_cause_sources_module["root_cause_sources_module"].xray_sumologic_source : null
+  description = "Sumo Logic AWS Xray source."
 }
