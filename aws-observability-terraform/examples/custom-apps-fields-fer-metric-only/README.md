@@ -57,9 +57,11 @@ Creating or pre-existence of some items cause issues if you include in multiple 
 - 1.2 terraform init
 - 1.3 in this example config is a mix of secrets  defined via TF_VAR_ in shell script (Review if this is appropriate for your env.) and the main.auto.tfvars file.
 
-### step 1.4 fields import
-Re 1.4 it's **highly likely some of the fields already exist** in your org and this will cause errors with deployment, as the field already exists. You will get error below for each field already existing (or FER)
-- 
+###Step 1.4 fields import
+
+Regarding point 1.4 it's highly likely some of the fields already exist in your org and this will cause errors with deployment, as the field already exists. You will get error below for each field already existing (or FER)
+
+
 ```
 ╷
 │ Error: {"id":"7GCYS-LGM9Z-8OGMO","errors":[{"code":"field:already_exists","message":"Field with the given name already exists"}]}
