@@ -1,40 +1,78 @@
-variable "environment" {
- type        = string
- description = "Enter au, ca, de, eu, jp, us2, in, fed or us1. For more information on Sumo Logic deployments visit https://help.sumologic.com/APIs/General-API-Information/Sumo-Logic-Endpoints-and-Firewall-Security"
+variable "sumologic_environment" {
+  type        = string
+  description = "Enter au, ca, de, eu, jp, us2, in, fed or us1. For more information on Sumo Logic deployments visit https://help.sumologic.com/APIs/General-API-Information/Sumo-Logic-Endpoints-and-Firewall-Security"
 
- validation {
-   condition = contains([
-     "au",
-     "ca",
-     "de",
-     "eu",
-     "jp",
-     "us1",
-     "us2",
-     "in",
-   "fed"], var.environment)
-   error_message = "The value must be one of au, ca, de, eu, jp, us1, us2, in, or fed."
- }
+  validation {
+    condition = contains([
+      "au",
+      "ca",
+      "de",
+      "eu",
+      "jp",
+      "us1",
+      "us2",
+      "in",
+    "fed"], var.sumologic_environment)
+    error_message = "The value must be one of au, ca, de, eu, jp, us1, us2, in, or fed."
+  }
 }
 
-variable "access_id" {
- type        = string
- description = "Sumo Logic Access ID. Visit https://help.sumologic.com/Manage/Security/Access-Keys#Create_an_access_key"
+variable "sumologic_access_id" {
+  type        = string
+  description = "Sumo Logic Access ID. Visit https://help.sumologic.com/Manage/Security/Access-Keys#Create_an_access_key"
 
- validation {
-   condition     = can(regex("\\w+", var.access_id))
-   error_message = "The SumoLogic access ID must contain valid characters."
- }
+  validation {
+    condition     = can(regex("\\w+", var.sumologic_access_id))
+    error_message = "The SumoLogic access ID must contain valid characters."
+  }
 }
 
-variable "access_key" {
- type        = string
- description = "Sumo Logic Access Key. Visit https://help.sumologic.com/Manage/Security/Access-Keys#Create_an_access_key"
- sensitive = true
- validation {
-   condition     = can(regex("\\w+", var.access_key))
-   error_message = "The SumoLogic access key must contain valid characters."
- }
+variable "sumologic_access_key" {
+  type        = string
+  description = "Sumo Logic Access Key. Visit https://help.sumologic.com/Manage/Security/Access-Keys#Create_an_access_key"
+  #sensitive = true
+
+  validation {
+    condition     = can(regex("\\w+", var.sumologic_access_key))
+    error_message = "The SumoLogic access key must contain valid characters."
+  }
+  
+}
+
+
+variable "sumo_api_endpoint" {
+  type = string
+  validation {
+    condition = contains([
+      "https://api.au.sumologic.com/api/",
+    "https://api.ca.sumologic.com/api/", "https://api.de.sumologic.com/api/", "https://api.eu.sumologic.com/api/", "https://api.fed.sumologic.com/api/", "https://api.in.sumologic.com/api/", "https://api.jp.sumologic.com/api/", "https://api.sumologic.com/api/", "https://api.us2.sumologic.com/api/"], var.sumo_api_endpoint)
+    error_message = "Argument \"sumo_api_endpoint\" must be one of the values specified at https://help.sumologic.com/APIs/General-API-Information/Sumo-Logic-Endpoints-and-Firewall-Security."
+  }
+}
+
+variable "sumologic_organization_id" {
+  type        = string
+  description = <<EOT
+            You can find your org on the Preferences page in the Sumo Logic UI. For more information, see the Preferences Page topic. Your org ID will be used to configure the IAM Role for Sumo Logic AWS Sources."
+            For more details, visit https://help.sumologic.com/01Start-Here/05Customize-Your-Sumo-Logic-Experience/Preferences-Page
+        EOT
+  validation {
+    condition     = can(regex("\\w+", var.sumologic_organization_id))
+    error_message = "The organization ID must contain valid characters."
+  }
+}
+
+variable "aws_account_alias" {
+  type        = string
+  description = <<EOT
+            Provide the Name/Alias for the AWS environment from which you are collecting data. This name will appear in the Sumo Logic Explorer View, metrics, and logs.
+            If you are going to deploy the solution in multiple AWS accounts then this value has to be overidden at main.tf file.
+            Do not include special characters in the alias.
+        EOT
+  validation {
+    condition     = can(regex("[a-z0-9]*", var.aws_account_alias))
+    error_message = "Alias must only contain lowercase letters, number and length less than or equal to 30 characters."
+  }
 }
 
 variable "cloudwatch_metrics_source_url" {
@@ -65,31 +103,6 @@ variable "cloudwatch_logs_source_url" {
   type        = string
   description = "Required if you are already collecting AWS Lambda CloudWatch logs. Provide the existing Sumo Logic AWS Lambda CloudWatch Source API URL. The account, accountid, region and namespace fields will be added to the Source. For information on how to determine the URL, see [View or Download Source JSON Configuration](https://help.sumologic.com/03Send-Data/Sources/03Use-JSON-to-Configure-Sources/Local-Configuration-File-Management/View-or-Download-Source-JSON-Configuration)."
   default = ""
-}
-
-variable "aws_account_alias" {
-  type        = string
-  description = <<EOT
-            Provide the Name/Alias for the AWS environment from which you are collecting data. This name will appear in the Sumo Logic Explorer View, metrics, and logs.
-            Please leave this blank if you are going to deploy the solution in multiple AWS accounts.
-            Do not include special characters in the alias.
-        EOT
-  validation {
-    condition     = can(regex("[a-z0-9]*", var.aws_account_alias))
-    error_message = "Alias must only contain lowercase letters, number and length less than or equal to 30 characters."
-  }
-}
-
-variable "sumologic_organization_id" {
-  type        = string
-  description = <<EOT
-            You can find your org on the Preferences page in the Sumo Logic UI. For more information, see the Preferences Page topic. Your org ID will be used to configure the IAM Role for Sumo Logic AWS Sources."
-            For more details, visit https://help.sumologic.com/01Start-Here/05Customize-Your-Sumo-Logic-Experience/Preferences-Page
-        EOT
-  validation {
-    condition     = can(regex("\\w+", var.sumologic_organization_id))
-    error_message = "The organization ID must contain valid characters."
-  }
 }
 
 variable "existing_iam_details" {
