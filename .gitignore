@@ -144,3 +144,4 @@ pkg/
 aws-observability-terraform/examples/custom-apps-fields-fer-metric-only/.terraform.lock.hcl
 aws-observability-terraform/examples/custom-apps-fields-fer-metric-only/.terraform.tfstate.lock.info
 aws-observability-terraform/examples/custom-apps-fields-fer-metric-only/terraform.tfstate.backup
+aws-observability-terraform/examples/custom-source-few-services.only/.terraform.tfstate.lock.info
