@@ -1,10 +1,10 @@
 # Example Source Module Only
-This config is an example for deploying *ONLY the source module config*, which is required for each account/region you want to deploy to.
-App module is not included as it only needs to be created ONDCE for all accounts and regions - so assumption is you might have another tf project to manage the core AWSO config on sumo side.
+This config is an example for deploying **ONLY the source module config**, which is required for each account/region you want to deploy to.
+App module is not included as it only needs to be created ONCE for all accounts and regions - so assumption is you might have another tf project to manage the core AWSO config on sumo side.
 
 There is another example in this repo for the app module see: ../custom-apps-fields-fer-metric-only
 
-there are many options available for the source module:
+There are many options available for the source module:
 - docs page: # for possible params for source module see: https://github.com/SumoLogic/sumologic-solution-templates/tree/master/aws-observability-terraform/source-module
 - variable config: https://github.com/SumoLogic/sumologic-solution-templates/blob/master/aws-observability-terraform/source-module/variables.tf
 
@@ -31,5 +31,4 @@ export TF_VAR_sumologic_access_id="$SUMO_ACCESS_ID"
 export TF_VAR_sumologic_access_key="$SUMO_ACCESS_KEY"
 ```
 - AWS provider will need the usual suspects (aws cli profile etc)
-- set collection params in ./main.auto.tfvars
-- ./main.tf has more advanced options for config but they are commented out
+- set collection params in ./main.auto.tfvars or extend options further in main.tf
