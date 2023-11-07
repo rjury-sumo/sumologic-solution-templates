@@ -39,8 +39,8 @@ collect_cloudwatch_metrics = "None"
 # true - Creates a Sumo Logic Log Source that collects application load balancer logs from an existing bucket or a new bucket.
 # configure "elb_source_details" details
 # false - no collection 
-collect_elb_logs = true
-auto_enable_access_logs = "Both"
+# collect_elb_logs = true
+# auto_enable_access_logs = "Both"
 
 # CloudTrail Source (step 7)
 # **** high volume source - consider FER/partition config to send some events to infreuqent tier in sumo! ***
