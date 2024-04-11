@@ -365,27 +365,27 @@ resource "sumologic_field_extraction_rule" "AwsObservabilitySQSCloudTrailLogsFER
 }
 
 # DEMONSTRATION CENTRAL FER FOR EXISTING SINGLE BUCKET CLOUDTRAILS
-# resource "sumologic_field_extraction_rule" "CustomCloudtrailFER" {
-#       depends_on = [time_sleep.wait_for_10_seconds]
-#       name = "CustomCloudtrailFER"
-#       scope = "_sourcecategory=*cloudtrail* eventsource "
-#       parse_expression = <<EOT
-#               | json field=_raw "eventName" as eventName
-#               | json field=_raw "eventType" as eventType
-#               | json field=_raw "eventSource" as eventSource
-#               | parse field=eventSource "*.amazonaws.com" as eventService
-#               | concat("aws/",tolowercase(eventservice)) as namespace
-#               | json field=_raw "recipientAccountId"
+resource "sumologic_field_extraction_rule" "CustomCloudtrailFER" {
+      depends_on = [time_sleep.wait_for_10_seconds]
+      name = "CustomCloudtrailFER"
+      scope = "_sourcecategory=*cloudtrail* eventsource "
+      parse_expression = <<EOT
+              | json field=_raw "eventName" as eventName
+              | json field=_raw "eventType" as eventType
+              | json field=_raw "eventSource" as eventSource
+              | parse field=eventSource "*.amazonaws.com" as eventService
+              | concat("aws/",tolowercase(eventservice)) as namespace
+              | json field=_raw "recipientAccountId"
 
-#               // very useful to track errors
-#               | Json "errorCode" nodrop
+              // very useful to track errors
+              | Json "errorCode" nodrop
 
-#               // trick AWSO as if we collected these via AWSO collection
-#               | recipientAccountId as account
+              // trick AWSO as if we collected these via AWSO collection
+              | recipientAccountId as account
 
-#               | if (recipientAccountId = "528560886094", "dev", account) as account
-#               | if (recipientAccountId = "567680881046", "prod", account) as account
+              | if (recipientAccountId = "123456789", "dev", account) as account
+              | if (recipientAccountId = "987654321", "prod", account) as account
 
-#       EOT
-#       enabled = true
-# }
+       EOT
+       enabled = true
+ }
